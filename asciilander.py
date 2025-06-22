@@ -7,6 +7,9 @@ import termios
 import tty
 import os
 from math import floor
+
+# runs in linux/wsl terminal
+# tbd: support windows term with alternate to termios
          
 # useful ansi control seqs
 clear_screen = chr(27)+"c"
