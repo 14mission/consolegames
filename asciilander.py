@@ -3,14 +3,18 @@ import random
 import threading
 import time
 import sys
-import termios
-import tty
 import os
 from math import floor
 
-# runs in linux/wsl terminal
-# tbd: support windows term with alternate to termios
-         
+# different console interfaces depending on os
+if sys.platform.startswith('win'):
+  winterm = True
+  import msvcrt
+else:
+  winterm = False
+  import tty
+  import termios
+
 # useful ansi control seqs
 clear_screen = chr(27)+"c"
 goto_top_left = chr(27)+"[1;1H"
@@ -92,7 +96,20 @@ def keythreadfunc():
   global keeplistening
   latestkey = '?'
   while keeplistening:
-    latestkey = sys.stdin.read(1)
+    # if running in windows use msvcrt.getch() and map results to ascii
+    if winterm:
+      latestkey = msvcrt.getch()
+      if latestkey == b'\xe0':
+        latestkey = msvcrt.getch()
+        if latestkey == b'K':
+          latestkey = 'h'
+        elif latestkey == b'M':
+          latestkey = 'l'
+      elif latestkey == b' ':
+        latestkey = ' '
+    # in linux/wsl just read one byte from stdin
+    else:
+      latestkey = sys.stdin.read(1)
 
 # main game loop thread calls this to
 # grab latest key,posted by keythreadfunc,
@@ -194,9 +211,11 @@ def game():
     loopctr += 1
 
 if __name__ == "__main__":
-  # set stdin to unbuffered so we can get keystrokes immediately
-  old_settings = termios.tcgetattr(sys.stdin.fileno())
-  tty.setraw(sys.stdin.fileno())
+  # set stdin to unbuffered so we can get keystrokes immediately, and cache console state
+  # this is for linux/wsl only
+  if not winterm:
+    old_settings = termios.tcgetattr(sys.stdin.fileno())
+    tty.setraw(sys.stdin.fileno())
   # hide cursor
   p(chr(27)+"[?25l")
   # start key handling thread
@@ -209,6 +228,7 @@ if __name__ == "__main__":
   # tell keyboard thread to quit
   keeplistening = False;
   kbth.join()
-  # reset terminal
-  termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_settings)
+  # reset terminal. seems to happen automatically in windows terminal
+  if not winterm:
+    termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_settings)
   p(clear_screen)
