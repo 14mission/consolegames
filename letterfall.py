@@ -65,20 +65,20 @@ def keythreadfunc():
 # main game loop thread calls this to
 # grab latest key,posted by keythreadfunc,
 # and adjust heading
-def keycontrols(col):
+def keycontrols(keepgoing,fastdrop,col):
   global latestkey
   if latestkey == 'h' or latestkey == chr(8) or latestkey == chr(68):
-    col -= 1
-    if col < 0:
-      col = 0
+    if col > 0:
+      col -= 1
   elif latestkey == 'l' or latestkey == chr(12) or latestkey == chr(67):
-    col += 1
-    if col > 4:
-      col = 4
-  elif latestkey == 'x':
-    col = -1
+    if col < 4:
+      col += 1
+  elif latestkey == 'x' or latestkey == chr(27):
+    keepgoing = False
+  elif latestkey == ' ':
+    fastdrop = True
   latestkey = "?"
-  return col
+  return keepgoing,fastdrop,col
     
 def game():
   # printed in upper right corner
@@ -89,13 +89,13 @@ def game():
 
   # game loop
   col = 2
+  fastdrop = False
+  keepgoing = True
   loopctr = 0
-  while True:
+  while keepgoing:
     jump(col,col)
     p(' ')
-    col = keycontrols(col)
-    if col == -1:
-      return
+    keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col)
     jump(col,col)
     p(str(col))
 
