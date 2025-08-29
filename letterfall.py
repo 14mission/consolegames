@@ -80,12 +80,10 @@ def keycontrols(keepgoing,fastdrop,col):
   latestkey = "?"
   return keepgoing,fastdrop,col
     
-def game():
+def game(wordlist):
   # printed in upper right corner
   p(clear_screen)
   helpmsg = "hit <- or ->e"
-
-  #wordlist = loadwordlist()
 
   # game loop
   col = 2
@@ -109,6 +107,17 @@ if __name__ == "__main__":
   if not winterm:
     old_settings = termios.tcgetattr(sys.stdin.fileno())
     tty.setraw(sys.stdin.fileno())
+  # load wordlist
+  wordset = {}
+  wlistfn = os.path.join(sys.path[0], "words.txt")
+  wlist = open(wlistfn)
+  for ln in wlist:
+    ln = ln.strip()
+    if len(ln) != 5:
+      raise Exception("non-5-letter word: "+ln)
+    ln = ln.upper()
+    wordset[ln] = True
+  print("numwords: "+str(len(wordset.keys())))
   # hide cursor
   p(chr(27)+"[?25l")
   # start key handling thread
@@ -117,7 +126,7 @@ if __name__ == "__main__":
   kbth = threading.Thread(target=keythreadfunc)
   kbth.start()
   # main game func
-  game()
+  game(wordset)
   # tell keyboard thread to quit
   keeplistening = False;
   kbth.join()
