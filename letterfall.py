@@ -87,19 +87,26 @@ def game(wordlist):
 
   # game loop
   col = 2
+  row = 0
+  curltr = chr(ord('A') + random.randint(0,26))
+  speed = 0.1
   fastdrop = False
   keepgoing = True
   loopctr = 0
   while keepgoing:
-    jump(col,col)
-    p(' ')
-    keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col)
-    jump(col,col)
-    p(str(col))
+    try:
+      jump(col,row)
+      p(' ')
+      keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col)
+      jump(col,row)
+      p(curltr)
 
-    # wait short interval so game doesn't finish instantly    
-    time.sleep(0.1)
-    loopctr += 1
+      # wait short interval so game doesn't finish instantly    
+      time.sleep(0.1)
+      loopctr += 1
+    except Exception as e:
+      return e
+  return None
 
 if __name__ == "__main__":
   # set stdin to unbuffered so we can get keystrokes immediately, and cache console state
@@ -126,7 +133,7 @@ if __name__ == "__main__":
   kbth = threading.Thread(target=keythreadfunc)
   kbth.start()
   # main game func
-  game(wordset)
+  gameExcept = game(wordset)
   # tell keyboard thread to quit
   keeplistening = False;
   kbth.join()
@@ -134,3 +141,5 @@ if __name__ == "__main__":
   if not winterm:
     termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_settings)
   p(clear_screen)
+  if gameExcept != None:
+    print(str(gameExcept))
