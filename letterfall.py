@@ -65,13 +65,13 @@ def keythreadfunc():
 # main game loop thread calls this to
 # grab latest key,posted by keythreadfunc,
 # and adjust heading
-def keycontrols(keepgoing,fastdrop,col):
+def keycontrols(keepgoing,fastdrop,col,boardwidth):
   global latestkey
   if latestkey == 'h' or latestkey == chr(8) or latestkey == chr(68):
     if col > 0:
       col -= 1
   elif latestkey == 'l' or latestkey == chr(12) or latestkey == chr(67):
-    if col < 4:
+    if col < boardwidth-1:
       col += 1
   elif latestkey == 'x' or latestkey == chr(27):
     keepgoing = False
@@ -93,12 +93,23 @@ def game(wordlist):
   fastdrop = False
   keepgoing = True
   loopctr = 0
+  boardheight = 25
+  boardwidth = 5
+  onboard = []
+  for i in range(boardheight):
+    onboard.append([None for j in range(boardwidth)])
   while keepgoing:
     try:
+      # erase falliung letter at old pos
       jump(col,row)
       p(' ')
-      keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col)
+      # key controls, update col, maybe turn on fast mode
+      keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col, boardwidth)
+      # gravity
       row += (1 if fastdrop else speed)
+      if row > boardheight:
+        row = boardheight
+      # draw letter at new pos
       jump(col,row)
       p(curltr)
 
