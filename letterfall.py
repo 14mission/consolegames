@@ -103,7 +103,7 @@ def game(wordlist):
     try:
       # init new letter?
       if wantnewltr == True:
-        curltr = chr(ord('A') + random.randint(0,26))
+        curltr = chr(random.randint(ord('A'),ord('Z')))
         row = 0
         col = random.randint(0,boardwidth)
         wantnewltr = False
@@ -114,10 +114,11 @@ def game(wordlist):
       keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col, boardwidth)
       # gravity
       newrow = row + (1 if fastdrop else speed)
-      if newrow > boardheight:
+      if newrow > boardheight or onboard[int(newrow)][col] != None:
         newrow = boardheight
         wantnewltr = True
         fastdrop = False
+        onboard[int(row)][col] = curltr
       else:
         row = newrow
       # draw letter at new pos
