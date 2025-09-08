@@ -86,12 +86,13 @@ def game(wordlist):
   helpmsg = "hit <- or ->e"
 
   # game loop
-  col = 2
+  col = 0
   row = 0
-  curltr = chr(ord('A') + random.randint(0,26))
+  curltr = None
   speed = 0.1
   fastdrop = False
   keepgoing = True
+  wantnewltr = True
   loopctr = 0
   boardheight = 25
   boardwidth = 5
@@ -100,15 +101,25 @@ def game(wordlist):
     onboard.append([None for j in range(boardwidth)])
   while keepgoing:
     try:
+      # init new letter?
+      if wantnewltr == True:
+        curltr = chr(ord('A') + random.randint(0,26))
+        row = 0
+        col = random.randint(0,boardwidth)
+        wantnewltr = False
       # erase falliung letter at old pos
       jump(col,row)
       p(' ')
       # key controls, update col, maybe turn on fast mode
       keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col, boardwidth)
       # gravity
-      row += (1 if fastdrop else speed)
-      if row > boardheight:
-        row = boardheight
+      newrow = row + (1 if fastdrop else speed)
+      if newrow > boardheight:
+        newrow = boardheight
+        wantnewltr = True
+        fastdrop = False
+      else:
+        row = newrow
       # draw letter at new pos
       jump(col,row)
       p(curltr)
