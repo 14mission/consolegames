@@ -98,6 +98,7 @@ def game(wordlist):
       jump(col,row)
       p(' ')
       keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col)
+      row += (1 if fastdrop else speed)
       jump(col,row)
       p(curltr)
 
