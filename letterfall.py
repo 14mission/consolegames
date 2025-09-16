@@ -124,6 +124,11 @@ def game(wordlist):
         wantnewltr = True
         fastdrop = False
         onboard[int(row)][col] = curltr
+        # see if we just made a word
+        if None not in onboard[int(row)] and "".join(onboard[int(row)]) in wordlist:
+          jump(0,int(row))
+          p("*****")
+          time.sleep(0.2)
       # otherwise still falling
       else:
         row = newrow
