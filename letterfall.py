@@ -129,6 +129,11 @@ def game(wordlist):
           jump(0,int(row))
           p("*****")
           time.sleep(0.2)
+          onboard.pop(int(row))
+          onboard.insert(0,[None for i in range(5)])
+          jump(0,0)
+          for boardrow in onboard:
+            print("".join([" " if ltr == None else ltr for ltr in boardrow]))
       # otherwise still falling
       else:
         row = newrow
