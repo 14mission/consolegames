@@ -4,6 +4,7 @@ import threading
 import time
 import sys
 import os
+import traceback
 from math import floor
 
 # different console interfaces depending on os
@@ -166,4 +167,4 @@ if __name__ == "__main__":
     termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_settings)
   p(clear_screen)
   if gameExcept != None:
-    print(str(gameExcept))
+    print(traceback.print_exception(gameExcept))
