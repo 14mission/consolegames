@@ -106,7 +106,7 @@ def game(wordlist):
       if wantnewltr == True:
         curltr = chr(random.randint(ord('A'),ord('Z')))
         row = 0
-        col = random.randint(0,boardwidth)
+        col = random.randrange(0,boardwidth)
         wantnewltr = False
       # erase falliung letter at old pos
       jump(col,row)
@@ -115,11 +115,13 @@ def game(wordlist):
       keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col, boardwidth)
       # gravity
       newrow = row + (1 if fastdrop else speed)
-      if newrow > boardheight or onboard[int(newrow)][col] != None:
+      # hit bottom or above another letter?
+      if newrow >= boardheight or onboard[int(newrow)][col] != None:
         newrow = boardheight
         wantnewltr = True
         fastdrop = False
         onboard[int(row)][col] = curltr
+      # otherwise still falling
       else:
         row = newrow
       # draw letter at new pos
