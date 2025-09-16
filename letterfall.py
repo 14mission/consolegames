@@ -98,6 +98,7 @@ def game(wordlist):
   boardheight = 25
   boardwidth = 5
   onboard = []
+  score = 0
   for i in range(boardheight):
     onboard.append([None for j in range(boardwidth)])
   while keepgoing:
@@ -108,9 +109,11 @@ def game(wordlist):
         row = 0
         col = random.randrange(0,boardwidth)
         wantnewltr = False
-      # erase falliung letter at old pos
+      # erase falling letter at old pos, and marker at bottom at oldcol
       jump(col,row)
-      p(' ')
+      p(" ")
+      jump(0,boardheight)
+      p("     ")
       # key controls, update col, maybe turn on fast mode
       keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col, boardwidth)
       # gravity
@@ -127,6 +130,12 @@ def game(wordlist):
       # draw letter at new pos
       jump(col,row)
       p(curltr)
+      # draw marker at bottom
+      jump(col,boardheight)
+      p("^")
+      # print score
+      jump(10,0)
+      p(str(score))
 
       # wait short interval so game doesn't finish instantly    
       time.sleep(0.1)
