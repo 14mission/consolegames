@@ -94,52 +94,73 @@ def game(wordlist):
   fastdrop = False
   keepgoing = True
   wantnewltr = True
+  newletterdropcounter = 25
   loopctr = 0
   boardheight = 25
   boardwidth = 5
   onboard = []
   score = 0
+  loopsleep = 0.1
   for i in range(boardheight):
     onboard.append([None for j in range(boardwidth)])
+  for i in range(5):
+    onboard[0][i] = chr(random.randint(ord('A'),ord('Z')))
+  jump(0,0)
+  p("".join(onboard[0]))
   while keepgoing:
     try:
       # init new letter?
       if wantnewltr == True:
-        curltr = chr(random.randint(ord('A'),ord('Z')))
-        row = 0
-        col = random.randrange(0,boardwidth)
-        wantnewltr = False
-      # erase falling letter at old pos, and marker at bottom at oldcol
-      jump(col,row)
-      p(" ")
-      jump(0,boardheight)
-      p("     ")
-      # key controls, update col, maybe turn on fast mode
-      keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col, boardwidth)
-      # gravity
-      newrow = row + (1 if fastdrop else speed)
-      # hit bottom or above another letter?
-      if newrow >= boardheight or onboard[int(newrow)][col] != None:
-        newrow = boardheight
-        wantnewltr = True
-        fastdrop = False
-        onboard[int(row)][col] = curltr
-        # see if we just made a word
-        if None not in onboard[int(row)] and "".join(onboard[int(row)]) in wordlist:
-          jump(0,int(row))
-          p("*****")
-          time.sleep(0.2)
-          onboard.pop(int(row))
-          onboard.insert(0,[None for i in range(5)])
+        if newletterdropcounter == 0 or fastdrop:
+          curltr = onboard[0][col]
+          onboard[0][col] = chr(random.randint(ord('A'),ord('Z')))
           jump(0,0)
-          for boardrow in onboard:
-            print("".join([" " if ltr == None else ltr for ltr in boardrow]))
-      # otherwise still falling
+          p("".join(onboard[0]))
+          wantnewltr = False
+          fastmode = False
+          row = 1
+        else:
+          jump(10,0)
+          p(str(newletterdropcounter * loopsleep))
+          # key controls, update col, maybe turn on fast mode
+          jump(0,boardheight)
+          p("     ")
+          keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col, boardwidth)
+          newletterdropcounter -= 1
+      # letter currently falling
       else:
-        row = newrow
-      # draw letter at new pos
-      jump(col,row)
-      p(curltr)
+        # erase falling letter at old pos, and marker at bottom at oldcol
+        jump(col,row)
+        p(" ")
+        jump(0,boardheight)
+        p("     ")
+        # key controls, update col, maybe turn on fast mode
+        keepgoing, fastdrop, col = keycontrols(keepgoing, fastdrop, col, boardwidth)
+        # gravity
+        newrow = row + (1 if fastdrop else speed)
+        # hit bottom or above another letter?
+        if newrow >= boardheight or onboard[int(newrow)][col] != None:
+          newrow = boardheight
+          wantnewltr = True
+          fastdrop = False
+          newletterdropcounter = 25
+          onboard[int(row)][col] = curltr
+          # see if we just made a word
+          if None not in onboard[int(row)] and "".join(onboard[int(row)]) in wordlist:
+            jump(0,int(row))
+            p("*****")
+            time.sleep(0.2)
+            onboard.pop(int(row))
+            onboard.insert(0,[None for i in range(5)])
+            for boardrow in range(len(onboard)):
+              jump(0,boardrow)
+              p("".join([" " if ltr == None else ltr for ltr in boardrow]))
+        # otherwise still falling
+        else:
+          row = newrow
+        # draw letter at new pos
+        jump(col,row)
+        p(curltr)
       # draw marker at bottom
       jump(col,boardheight)
       p("^")
@@ -148,7 +169,7 @@ def game(wordlist):
       p(str(score))
 
       # wait short interval so game doesn't finish instantly    
-      time.sleep(0.1)
+      time.sleep(loopsleep)
       loopctr += 1
     except Exception as e:
       return e
@@ -162,12 +183,10 @@ if __name__ == "__main__":
     tty.setraw(sys.stdin.fileno())
   # load wordlist
   wordset = {}
-  wlistfn = os.path.join(sys.path[0], "words.txt")
+  wlistfn = os.path.join(sys.path[0], "scrabwords.txt")
   wlist = open(wlistfn)
   for ln in wlist:
     ln = ln.strip()
-    if len(ln) != 5:
-      raise Exception("non-5-letter word: "+ln)
     ln = ln.upper()
     wordset[ln] = True
   print("numwords: "+str(len(wordset.keys())))
