@@ -80,6 +80,9 @@ def keycontrols(keepgoing,fastdrop,col,boardwidth):
     fastdrop = True
   latestkey = "?"
   return keepgoing,fastdrop,col
+
+def pickletter():
+  return chr(random.randint(ord('A'),ord('Z')))
     
 def game(wordlist):
   # printed in upper right corner
@@ -104,7 +107,7 @@ def game(wordlist):
   for i in range(boardheight):
     onboard.append([None for j in range(boardwidth)])
   for i in range(5):
-    onboard[0][i] = chr(random.randint(ord('A'),ord('Z')))
+    onboard[0][i] = pickletter()
   jump(0,0)
   p("".join(onboard[0]))
   while keepgoing:
@@ -113,11 +116,11 @@ def game(wordlist):
       if wantnewltr == True:
         if newletterdropcounter == 0 or fastdrop:
           curltr = onboard[0][col]
-          onboard[0][col] = chr(random.randint(ord('A'),ord('Z')))
+          onboard[0][col] = pickletter()
           jump(0,0)
           p("".join(onboard[0]))
           wantnewltr = False
-          fastmode = False
+          fastdrop = False
           row = 1
         else:
           jump(10,0)
