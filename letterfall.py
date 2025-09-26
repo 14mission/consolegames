@@ -81,10 +81,10 @@ def keycontrols(keepgoing,fastdrop,col,boardwidth):
   latestkey = "?"
   return keepgoing,fastdrop,col
 
-def pickletter():
-  return chr(random.randint(ord('A'),ord('Z')))
+def pickletter(letterpickmap):
+  return letterpickmap[random.randrange(len(letterpickmap))]
     
-def game(wordlist):
+def game(wordlist,picklettermap):
   # printed in upper right corner
   p(clear_screen)
   helpmsg = "hit <- or ->e"
@@ -107,7 +107,7 @@ def game(wordlist):
   for i in range(boardheight):
     onboard.append([None for j in range(boardwidth)])
   for i in range(5):
-    onboard[0][i] = pickletter()
+    onboard[0][i] = pickletter(picklettermap)
   jump(0,0)
   p("".join(onboard[0]))
   while keepgoing:
@@ -116,7 +116,7 @@ def game(wordlist):
       if wantnewltr == True:
         if newletterdropcounter == 0 or fastdrop:
           curltr = onboard[0][col]
-          onboard[0][col] = pickletter()
+          onboard[0][col] = pickletter(picklettermap)
           jump(0,0)
           p("".join(onboard[0]))
           wantnewltr = False
@@ -154,10 +154,10 @@ def game(wordlist):
             p("*****")
             time.sleep(0.2)
             onboard.pop(int(row))
-            onboard.insert(0,[None for i in range(5)])
+            onboard.insert(1,[None for i in range(5)])
             for boardrow in range(len(onboard)):
               jump(0,boardrow)
-              p("".join([" " if ltr == None else ltr for ltr in boardrow]))
+              p("".join([" " if ltr == None else ltr for ltr in onboard[boardrow]]))
         # otherwise still falling
         else:
           row = newrow
@@ -170,13 +170,32 @@ def game(wordlist):
       # print score
       jump(10,0)
       p(str(score))
-
       # wait short interval so game doesn't finish instantly    
       time.sleep(loopsleep)
       loopctr += 1
     except Exception as e:
       return e
   return None
+
+# make a map for frequency-based random letter picking
+def makeletterpickmap(wordset):
+  ltrcnt = {}
+  topcnt = 0
+  for word in wordset:
+    for ltr in word:
+      if ltr not in ltrcnt:
+        ltrcnt[ltr] = 0
+      ltrcnt[ltr] += 1
+      if ltrcnt[ltr] > topcnt:
+        topcnt = ltrcnt[ltr]
+  letterpickmap = []
+  for ltr in sorted(ltrcnt):
+    relfreq = int(10.0*ltrcnt[ltr]/topcnt)
+    if relfreq < 1:
+      relfreq = 1
+    for i in range(relfreq):
+      letterpickmap.append(ltr)
+  return letterpickmap
 
 if __name__ == "__main__":
   # set stdin to unbuffered so we can get keystrokes immediately, and cache console state
@@ -193,6 +212,8 @@ if __name__ == "__main__":
     ln = ln.upper()
     wordset[ln] = True
   print("numwords: "+str(len(wordset.keys())))
+  # letter picking map
+  letterpickmap = makeletterpickmap(wordset)
   # hide cursor
   p(chr(27)+"[?25l")
   # start key handling thread
@@ -201,7 +222,7 @@ if __name__ == "__main__":
   kbth = threading.Thread(target=keythreadfunc)
   kbth.start()
   # main game func
-  gameExcept = game(wordset)
+  gameExcept = game(wordset,letterpickmap)
   # tell keyboard thread to quit
   keeplistening = False;
   kbth.join()
