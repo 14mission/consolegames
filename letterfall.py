@@ -123,7 +123,7 @@ def game(wordlist,picklettermap):
           fastdrop = False
           row = 1
         else:
-          jump(10,0)
+          jump(20,0)
           p(str(newletterdropcounter * loopsleep))
           # key controls, update col, maybe turn on fast mode
           jump(0,boardheight)
@@ -149,21 +149,33 @@ def game(wordlist,picklettermap):
           newletterdropcounter = 25
           onboard[int(row)][col] = curltr
           # see if we just made a word
-          if None not in onboard[int(row)] and "".join(onboard[int(row)]) in wordlist:
-            jump(0,int(row))
-            p("*****")
-            time.sleep(0.2)
-            onboard.pop(int(row))
-            onboard.insert(1,[None for i in range(5)])
-            for boardrow in range(len(onboard)):
-              jump(0,boardrow)
-              p("".join([" " if ltr == None else ltr for ltr in onboard[boardrow]]))
+          for trywordlen in range(3,6):
+            foundaword = False
+            for trywordstartcol in range(5):
+              if trywordstartcol + trywordlen <= 5:
+                subrow = onboard[int(row)][trywordstartcol:(trywordstartcol+trywordlen)]
+                if None not in subrow and "".join(subrow) in wordlist:
+                  jump(trywordstartcol,int(row))
+                  p("*"*trywordlen)
+                  time.sleep(0.2)
+                  jump(trywordstartcol,int(row))
+                  p(" "*trywordlen)
+                  for col in range(trywordstartcol,trywordstartcol+trywordlen):
+                    onboard[int(row)][col] = None
+                  score += trywordlen
+                  jump(40,0)
+                  p("".join(subrow) + "=" + str(trywordlen))
+                  curltr = None
+                  break
+            if foundaword:
+              break
         # otherwise still falling
         else:
           row = newrow
         # draw letter at new pos
-        jump(col,row)
-        p(curltr)
+        if curltr != None:
+          jump(col,row)
+          p(curltr)
       # draw marker at bottom
       jump(col,boardheight)
       p("^")
